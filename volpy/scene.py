@@ -22,11 +22,11 @@ class Scene(object):
 
         origins, directions = self._linspace_rays(shape)
         pixels = shape[0] * shape[1]
-        image = np.zeros((pixels, 3))
+        image = np.zeros((pixels, 4))
 
         light = self._cast_rays(origins, directions, image, step)
         image += light
-        return image.reshape((shape[1], shape[0], 3))
+        return image.reshape((shape[1], shape[0], 4))
 
     def _cast_rays(self, positions, directions, image, step):
         distance = self.camera.near
@@ -34,7 +34,7 @@ class Scene(object):
         deltas = np.ndarray(directions.shape)
         transmissivity = np.ones((ray_count, 1))
         optical_length = self.scatter * step
-        light = np.zeros((ray_count, 3))
+        light = np.zeros((ray_count, 4))
 
         delta_transmissivity = np.ndarray((ray_count, 1))
         color = np.ndarray((ray_count, 3))
@@ -59,7 +59,7 @@ class Scene(object):
             color.fill(1)
             color *= transmissivity
             color *= (1 - delta_transmissivity)
-            light += color
+            light[:, 0:3] += color
             transmissivity *= delta_transmissivity
 
             # Cast the rays forward one step.
@@ -67,6 +67,7 @@ class Scene(object):
             positions += deltas
             distance += step
 
+        light[:, 3] = np.reshape(1 - transmissivity, ray_count)
         return light
 
     def _linspace_rays(self, shape):
