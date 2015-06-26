@@ -108,9 +108,10 @@ class Camera(object):
         right = np.repeat(self.right, len(x)).reshape(shape)
         view = np.repeat(self.view, count).reshape(shape)
         origins = np.repeat(self.eye, count).reshape(shape)
+        origins = origins.astype(self.dtype)
 
-        buffer1 = np.ndarray(shape)
-        buffer2 = np.ndarray(shape)
+        buffer1 = np.ndarray(shape, dtype=self.dtype)
+        buffer2 = np.ndarray(shape, dtype=self.dtype)
 
         # Compute the directions array.
         np.multiply(y, up, out=buffer1)

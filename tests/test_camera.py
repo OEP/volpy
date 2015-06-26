@@ -33,6 +33,7 @@ class CameraTest(unittest.TestCase):
 
     def test_view1(self):
         self.assertIsInstance(self.camera.view, np.ndarray)
+        self.assertEqual(self.camera.view.dtype, np.dtype(np.float32))
         npt.assert_almost_equal([0, 0, 1], self.camera.view)
         npt.assert_almost_equal(0, self.camera.up.dot(self.camera.view))
 
@@ -44,6 +45,7 @@ class CameraTest(unittest.TestCase):
 
     def test_up1(self):
         self.assertIsInstance(self.camera.up, np.ndarray)
+        self.assertEqual(self.camera.up.dtype, np.dtype(np.float32))
         npt.assert_almost_equal([0, 1, 0], self.camera.up)
         npt.assert_almost_equal(0, self.camera.up.dot(self.camera.view))
 
@@ -55,6 +57,7 @@ class CameraTest(unittest.TestCase):
 
     def test_right1(self):
         self.assertIsInstance(self.camera.right, np.ndarray)
+        self.assertEqual(self.camera.right.dtype, np.dtype(np.float32))
         npt.assert_almost_equal(0, self.camera.up.dot(self.camera.right))
         npt.assert_almost_equal(0, self.camera.view.dot(self.camera.right))
 
@@ -66,5 +69,7 @@ class CameraTest(unittest.TestCase):
         origin, direction = self.camera.cast([0.5], [0.5])
         self.assertIsInstance(origin, np.ndarray)
         self.assertIsInstance(direction, np.ndarray)
+        self.assertEqual(origin.dtype, np.dtype(np.float32))
+        self.assertEqual(direction.dtype, np.dtype(np.float32))
         npt.assert_almost_equal(origin, [[0, 0, 0.1]])
         npt.assert_almost_equal(direction, [[0, 0, 1]])
