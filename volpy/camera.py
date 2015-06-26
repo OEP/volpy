@@ -104,10 +104,10 @@ class Camera(object):
         # Set up some arrays for broadcasting.
         count = len(x)
         shape = (count, 3)
-        up = np.repeat(self.up, count).reshape(shape)
-        right = np.repeat(self.right, len(x)).reshape(shape)
-        view = np.repeat(self.view, count).reshape(shape)
-        origins = np.repeat(self.eye, count).reshape(shape)
+        up = np.tile(self.up, count).reshape(shape)
+        right = np.tile(self.right, count).reshape(shape)
+        view = np.tile(self.view, count).reshape(shape)
+        origins = np.tile(self.eye, count).reshape(shape)
         origins = origins.astype(self.dtype)
 
         buffer1 = np.ndarray(shape, dtype=self.dtype)
@@ -118,6 +118,7 @@ class Camera(object):
         np.multiply(x, right, out=buffer2)
         directions = buffer1 + buffer2
         np.add(view, directions, out=directions)
+        normalize(directions)
 
         # Project rays to the near plane, and store it in the origins array.
         np.multiply(directions, self.near, out=buffer1)
