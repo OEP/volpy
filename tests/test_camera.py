@@ -73,3 +73,22 @@ class CameraTest(unittest.TestCase):
         self.assertEqual(direction.dtype, np.dtype(np.float32))
         npt.assert_almost_equal(origin, [[0, 0, 0.1]])
         npt.assert_almost_equal(direction, [[0, 0, 1]])
+
+    def test_cast2(self):
+        '''Cast should not write to arguments'''
+        coord = np.linspace(0, 1, 10)
+        coord.flags.writeable = False
+        self.camera.cast(coord, coord)
+
+    def test_cast3(self):
+        '''Checks for out of bounds'''
+        coord = np.linspace(0, 1.1, 10)
+        with self.assertRaises(ValueError):
+            self.camera.cast(coord, coord)
+
+    def test_cast4(self):
+        '''Checks for same size'''
+        coord1 = np.linspace(0, 1.0, 10)
+        coord2 = np.linspace(0, 1.0, 11)
+        with self.assertRaises(ValueError):
+            self.camera.cast(coord1, coord2)
