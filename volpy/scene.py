@@ -6,11 +6,13 @@ from ._util import cartesian
 
 class Scene(object):
 
-    def __init__(self, emit=None, emit_color=None, camera=None, scatter=1.):
+    def __init__(self, emit=None, emit_color=None, camera=None, scatter=1.,
+                 tol=1e-6):
         self.emit = emit
         self.emit_color = emit_color
         self.camera = camera or _default_camera()
         self.scatter = scatter
+        self.tol = tol
 
     def render(self, shape, step=None):
         if not len(shape) == 2:
@@ -32,12 +34,16 @@ class Scene(object):
         delta_transmissivity = np.ndarray((ray_count,))
         optical_length = self.scatter * step
 
-        while distance < self.camera.far:
-            # XXX Cull the rays which have no transmissivity.
+        while (
+            distance < self.camera.far
+            and np.any(transmissivity > self.tol)
+        ):
+            # XXX Cull rays which have no transmissivity
 
             # Calculate the change in transmissivity.
             self.emit(positions, delta_transmissivity)
             delta_transmissivity *= -optical_length
+            np.exp(delta_transmissivity, out=delta_transmissivity)
             transmissivity *= delta_transmissivity
 
             # Cast the rays forward one step.
