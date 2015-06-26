@@ -87,6 +87,8 @@ class Camera(object):
         directions : ndarray
             A collection of ray directions.
         """
+        imx = np.asarray(imx)
+        imy = np.asarray(imy)
         if not (
             np.all((0 <= imx) & (imx <= 1))
             and np.all((0 <= imy) & (imy <= 1))
