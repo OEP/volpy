@@ -27,9 +27,9 @@ class Scene(object):
     def _cast_rays(self, positions, directions, image, step):
         distance = self.camera.near
         ray_count = positions.shape[0]
-        deltas = np.zeros(directions.shape)
+        deltas = np.ndarray(directions.shape)
         transmissivity = np.ones((ray_count,))
-        delta_transmissivity = np.zeros((ray_count,))
+        delta_transmissivity = np.ndarray((ray_count,))
         optical_length = self.scatter * step
 
         while distance < self.camera.far:
@@ -37,10 +37,8 @@ class Scene(object):
 
             # Calculate the change in transmissivity.
             self.emit(positions, delta_transmissivity)
-            np.multiply(delta_transmissivity, -optical_length,
-                        out=delta_transmissivity)
-            np.multiply(transmissivity, delta_transmissivity,
-                        out=transmissivity)
+            delta_transmissivity *= -optical_length
+            transmissivity *= delta_transmissivity
 
             # Cast the rays forward one step.
             np.multiply(directions, step, out=deltas)
