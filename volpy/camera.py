@@ -96,13 +96,27 @@ class Camera(object):
             raise ValueError('imx and imy must have same length')
         x = ascolumn((2. * imx - 1.) * self._tan_hfov)
         y = ascolumn((2. * imy - 1.) * self._tan_vfov)
-        up = [self.up for _ in range(len(y))]
-        right = [self.right for _ in range(len(x))]
-        view = [self.view for _ in range(len(x))]
 
-        directions = normalize(y * up + x * right + view)
-        origins = (np.array([self.eye for _ in range(len(directions))]) +
-                   directions * self.near)
+        # Set up some arrays for broadcasting.
+        count = len(x)
+        shape = (count, 3)
+        up = np.repeat(self.up, count).reshape(shape)
+        right = np.repeat(self.right, len(x)).reshape(shape)
+        view = np.repeat(self.view, count).reshape(shape)
+        origins = np.repeat(self.eye, count).reshape(shape)
+
+        buffer1 = np.ndarray(shape)
+        buffer2 = np.ndarray(shape)
+
+        # Compute the directions array.
+        np.multiply(y, up, out=buffer1)
+        np.multiply(x, right, out=buffer2)
+        directions = buffer1 + buffer2
+        np.add(view, directions, out=directions)
+
+        # Project rays to the near plane, and store it in the origins array.
+        np.multiply(directions, self.near, out=buffer1)
+        np.add(origins, buffer1, out=origins)
         return origins, directions
 
     def _update(self):
