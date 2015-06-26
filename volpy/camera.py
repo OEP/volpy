@@ -12,7 +12,9 @@ ASPECT_4_3 = 4. / 3.
 class Camera(object):
 
     def __init__(self, eye, view, up=(0, 1, 0), fov=60.,
-                 aspect_ratio=ASPECT_16_9, near=0.1, far=2.0):
+                 aspect_ratio=ASPECT_16_9, near=0.1, far=2.0,
+                 dtype=np.float32):
+        self.dtype = dtype
         self.eye = eye
         self.view = view
         self.up = up
@@ -27,7 +29,7 @@ class Camera(object):
 
     @eye.setter
     def eye(self, eye):
-        self._eye = np.asarray(eye)
+        self._eye = np.asarray(eye, dtype=self.dtype)
 
     @property
     def view(self):
@@ -35,7 +37,7 @@ class Camera(object):
 
     @view.setter
     def view(self, view):
-        self._view = np.asarray(view)
+        self._view = np.asarray(view, dtype=self.dtype)
         self._update()
 
     @property
@@ -44,7 +46,7 @@ class Camera(object):
 
     @up.setter
     def up(self, up):
-        self._up = np.asarray(up)
+        self._up = np.asarray(up, dtype=self.dtype)
         self._update()
 
     @property
