@@ -2,6 +2,7 @@ import numpy as np
 
 from .camera import Camera
 from ._util import cartesian, ascolumn
+from ._native import cast_rays
 
 
 class Scene(object):
@@ -24,7 +25,7 @@ class Scene(object):
         pixels = shape[0] * shape[1]
         image = np.zeros((pixels, 4))
 
-        light = self._cast_rays(origins, directions, image, step)
+        light = cast_rays(self, origins, directions, image, step)
         image += light
         return image.reshape((shape[1], shape[0], 4))
 
