@@ -1,5 +1,10 @@
 import numpy as np
 
+from contextlib import contextmanager
+import atexit
+import sys
+import time
+
 
 def cartesian(arrays, out=None):
     """
@@ -90,3 +95,24 @@ def normalize(v):
         v[:] /= ascolumn(np.linalg.norm(v, 2, axis=1))
         return v
     raise ValueError('Unsupported ndim: %d' % v.ndim)
+
+
+@contextmanager
+def profile(name):
+    global _profile_registered
+    if not _profile_registered:
+        atexit.register(_profile_print_results)
+        _profile_registered = True
+    total = _profile_results.get(name, 0.)
+    t0 = time.time()
+    try:
+        yield
+    finally:
+        _profile_results[name] = total + time.time() - t0
+_profile_results = {}
+_profile_registered = False
+
+
+def _profile_print_results():
+    for name, value in _profile_results.items():
+        sys.stderr.write('{} {}\n'.format(name, value))
