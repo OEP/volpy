@@ -55,8 +55,11 @@ class Scene(object):
             delta_transmissivity *= -optical_length
             np.exp(delta_transmissivity, out=delta_transmissivity)
 
-            # XXX Evaluate the color function instead of this next line.
-            color.fill(1)
+            # Compute the light color.
+            if self.emit_color is None:
+                color.fill(1)
+            else:
+                self.emit_color(positions, color)
             color *= transmissivity
             color *= (1 - delta_transmissivity)
             light[:, 0:3] += color
