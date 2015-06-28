@@ -25,7 +25,7 @@ class Scene(object):
         pixels = shape[0] * shape[1]
         image = np.zeros((pixels, 4))
 
-        light = cast_rays(self, origins, directions, image, step)
+        light = cast_rays(self, origins, directions, step)
         image += light
         return image.reshape((shape[1], shape[0], 4))
 

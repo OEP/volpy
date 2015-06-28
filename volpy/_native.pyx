@@ -1,16 +1,26 @@
 import numpy as np
+cimport numpy as np
+
+DTYPE = np.float32
+ctypedef np.float32_t DTYPE_t
 
 
-def cast_rays(scene, positions, directions, image, step):
-    distance = scene.camera.near
-    ray_count = positions.shape[0]
-    deltas = np.ndarray(directions.shape)
-    transmissivity = np.ones((ray_count, 1))
-    optical_length = scene.scatter * step
-    light = np.zeros((ray_count, 4))
+def cast_rays(
+    scene,
+    np.ndarray[DTYPE_t, ndim=2] positions,
+    np.ndarray[DTYPE_t, ndim=2] directions,
+    float step
+):
+    cdef float distance = scene.camera.near
+    cdef int ray_count = positions.shape[0]
+    cdef float optical_length = scene.scatter * step
 
-    delta_transmissivity = np.ndarray((ray_count, 1))
-    color = np.ndarray((ray_count, 3))
+    cdef np.ndarray[DTYPE_t, ndim=2] deltas = np.ndarray((ray_count, 3), dtype=DTYPE)
+    cdef np.ndarray[DTYPE_t, ndim=2] transmissivity = np.ones((ray_count, 1), dtype=DTYPE)
+    cdef np.ndarray[DTYPE_t, ndim=2] light = np.zeros((ray_count, 4), dtype=DTYPE)
+    cdef np.ndarray[DTYPE_t, ndim=2] delta_transmissivity = np.ndarray((ray_count, 1), dtype=DTYPE)
+    cdef np.ndarray[DTYPE_t, ndim=1] emit_buffer = np.ndarray((ray_count,), dtype=DTYPE)
+    cdef np.ndarray[DTYPE_t, ndim=2] color = np.ndarray((ray_count, 3), dtype=DTYPE)
 
     while (
         distance < scene.camera.far
@@ -18,13 +28,11 @@ def cast_rays(scene, positions, directions, image, step):
     ):
         # XXX Cull rays which have no transmissivity
 
-        # Calculate the change in transmissivity. Here, we are reshaping
-        # the delta_transmisivity vector to pass to the client functions,
-        # which expect ndim=1. We reshape later for broadcasting purposes.
-        delta_transmissivity = np.reshape(delta_transmissivity,
-                                            (ray_count,))
-        scene.emit(positions, delta_transmissivity)
-        delta_transmissivity = delta_transmissivity.reshape(ray_count, 1)
+        # The client will put their results in the emit_buffer variable which
+        # has ndim=1. This is a bit more natural that needing to reshape into
+        # an ndim=2 array every time.
+        scene.emit(positions, emit_buffer)
+        delta_transmissivity = emit_buffer.reshape(ray_count, 1)
         delta_transmissivity *= -optical_length
         np.exp(delta_transmissivity, out=delta_transmissivity)
 
