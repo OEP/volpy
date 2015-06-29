@@ -1,7 +1,7 @@
 import numpy as np
 
 from .camera import Camera
-from ._util import cartesian, ascolumn
+from ._util import cartesian
 from ._native import cast_rays
 
 
@@ -28,51 +28,6 @@ class Scene(object):
         light = cast_rays(self, origins, directions, step)
         image += light
         return image.reshape((shape[1], shape[0], 4))
-
-    def _cast_rays(self, positions, directions, image, step):
-        distance = self.camera.near
-        ray_count = positions.shape[0]
-        deltas = np.ndarray(directions.shape)
-        transmissivity = np.ones((ray_count, 1))
-        optical_length = self.scatter * step
-        light = np.zeros((ray_count, 4))
-
-        delta_transmissivity = np.ndarray((ray_count, 1))
-        color = np.ndarray((ray_count, 3))
-
-        while (
-            distance < self.camera.far
-            and np.any(transmissivity > self.tol)
-        ):
-            # XXX Cull rays which have no transmissivity
-
-            # Calculate the change in transmissivity. Here, we are reshaping
-            # the delta_transmisivity vector to pass to the client functions,
-            # which expect ndim=1. We reshape later for broadcasting purposes.
-            delta_transmissivity = np.reshape(delta_transmissivity,
-                                              (ray_count,))
-            self.emit(positions, delta_transmissivity)
-            delta_transmissivity = ascolumn(delta_transmissivity)
-            delta_transmissivity *= -optical_length
-            np.exp(delta_transmissivity, out=delta_transmissivity)
-
-            # Compute the light color.
-            if self.emit_color is None:
-                color.fill(1)
-            else:
-                self.emit_color(positions, color)
-            color *= transmissivity
-            color *= (1 - delta_transmissivity)
-            light[:, 0:3] += color
-            transmissivity *= delta_transmissivity
-
-            # Cast the rays forward one step.
-            np.multiply(directions, step, out=deltas)
-            positions += deltas
-            distance += step
-
-        light[:, 3] = np.reshape(1 - transmissivity, ray_count)
-        return light
 
     def _linspace_rays(self, shape):
         imy, imx = cartesian([np.linspace(0, 1, shape[1]),
