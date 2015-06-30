@@ -11,6 +11,22 @@ from ._native import cast_rays
 class Scene(object):
 
     def __init__(self, emit=None, emit_color=None, camera=None, scatter=1.):
+        '''
+        Scene constructor.
+
+        Parameters
+        ----------
+        emit : callable
+            A scalar field callable representing the emission of the object.
+        emit_color : callable
+            A color field callable respresenting the color of the emission.
+        camera : Camera
+            The camera for the rendered image.
+        scatter : float
+            The global scattering constant. Higher values increase how "solid"
+            a density looks in the resulting image.
+
+        '''
         self.emit = emit
         self.emit_color = emit_color
         self.camera = camera or _default_camera()
@@ -18,6 +34,37 @@ class Scene(object):
 
     def render(self, shape, step=None, workers=None, tol=1e-6,
                method='thread'):
+        '''
+        Render an image.
+
+        Parameters
+        ----------
+        shape : tuple of int of length 2
+            The desired shape of the output image.
+        step : float or None
+            The ray step size. If None, step exactly 100 times.
+        workers : int or None
+            Number of worker threads/processes. If None, use the number of CPUs
+            returned by ``multiprocessing.cpu_count()``.
+        tol : float
+            Minimum transmissivity value for a ray to be considered alive. If
+            no ray's transmissivity is above this value, the trace is stopped
+            early.
+        method : str
+            Either 'thread' or 'fork'. Determines the concurrency method used
+            for rendering. With 'thread' multiple threads are launched. With
+            'fork' multiple processes are launched. Note that threads are more
+            likely to have less CPU utilization due to the GIL. Processes are
+            not as likely, but their memory will be duplicated.
+
+        Returns
+        -------
+        image : numpy.ndarray
+            A 2D image of shape ``(shape[1], shape[0], 4)`` containing the
+            results. The color channel is RGBA format with floating point
+            depth.
+
+        '''
         if workers is None:
             workers = multiprocessing.cpu_count()
         elif workers < 1:
