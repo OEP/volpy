@@ -16,11 +16,12 @@ class Scene(object):
         self.camera = camera or _default_camera()
         self.scatter = scatter
 
-    def render(self, shape, step=None, threads=None, tol=1e-6):
-        if threads is None:
-            threads = multiprocessing.cpu_count()
-        elif threads < 1:
-            raise ValueError('Must have at least 1 thread.')
+    def render(self, shape, step=None, workers=None, tol=1e-6,
+               method='thread'):
+        if workers is None:
+            workers = multiprocessing.cpu_count()
+        elif workers < 1:
+            raise ValueError('Must have at least 1 worker.')
         if tol <= 0:
             raise ValueError('Tolerance must be >0.')
         if not len(shape) == 2:
@@ -32,30 +33,10 @@ class Scene(object):
         pixels = shape[0] * shape[1]
         image = np.zeros((pixels, 4))
 
-        light = self._cast_rays(origins, directions, step, threads, tol)
+        light = _cast_rays(self, origins, directions, step, workers, tol,
+                           method)
         image += light
         return image.reshape((shape[1], shape[0], 4))
-
-    def _cast_rays(self, positions, directions, step, threads, tol):
-        wait = []
-        chunk_size = max(1, int(len(positions) / threads))
-        for i in range(0, len(positions), chunk_size):
-            thread = TraceRay(
-                scene=self,
-                positions=positions[i:i + chunk_size],
-                directions=directions[i:i + chunk_size],
-                step=step,
-                tol=tol,
-            )
-            wait.append(thread)
-            thread.start()
-
-        wait[0].join()
-        light = wait[0].light
-        for thread in wait[1:]:
-            thread.join()
-            light = np.append(light, thread.light, axis=0)
-        return light
 
     def _linspace_rays(self, shape):
         imy, imx = cartesian([np.linspace(0, 1, shape[1]),
@@ -63,22 +44,76 @@ class Scene(object):
         return self.camera.cast(imx, imy)
 
 
-class TraceRay(threading.Thread):
+class Job(object):
 
     def __init__(self, scene, positions, directions, step, tol):
-        super().__init__()
         self.positions = positions
         self.directions = directions
         self.scene = scene
-        self.light = None
         self.step = step
         self.tol = tol
 
+
+class TraceRay(threading.Thread):
+
+    def __init__(self, job):
+        super().__init__()
+        self.job = job
+        self.light = None
+
     def run(self):
-        self.light = cast_rays(self.scene, self.positions,
-                               self.directions, self.step,
-                               self.tol)
+        self.light = _run_job(self.job)
 
 
 def _default_camera():
     return Camera(eye=(0., 0., 0.), view=(0., 0., 1.))
+
+
+def _cast_rays(scene, positions, directions, step, workers, tol, method):
+    jobs = []
+    chunk_size = max(1, int(len(positions) / workers))
+    for i in range(0, len(positions), chunk_size):
+        job = Job(
+            scene=scene,
+            positions=positions[i:i + chunk_size],
+            directions=directions[i:i + chunk_size],
+            step=step,
+            tol=tol,
+        )
+        jobs.append(job)
+
+    if method == 'thread':
+        return _cast_rays_thread(jobs)
+    elif method == 'fork':
+        return _cast_rays_fork(jobs)
+    else:
+        raise ValueError('Invalid method: %s' % method)
+
+
+def _cast_rays_thread(jobs):
+    wait = []
+    for job in jobs:
+        thread = TraceRay(job)
+        wait.append(thread)
+        thread.start()
+
+    wait[0].join()
+    light = wait[0].light
+    for thread in wait[1:]:
+        thread.join()
+        light = np.append(light, thread.light, axis=0)
+    return light
+
+
+def _cast_rays_fork(jobs):
+    pool = multiprocessing.Pool(len(jobs))
+    results = pool.map(_run_job, jobs)
+    light = results[0]
+    for result in results[1:]:
+        light = np.append(light, result, axis=0)
+    return light
+
+
+def _run_job(job):
+    return cast_rays(job.scene, job.positions, job.directions, job.step,
+                     job.tol)
