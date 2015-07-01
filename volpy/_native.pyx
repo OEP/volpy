@@ -39,13 +39,13 @@ def cast_rays(
         # The client will put their results in the emit_buffer variable which
         # has ndim=1. This is a bit more natural that needing to reshape into
         # an ndim=2 array every time.
-        scene.emit(positions, density)
+        density[:] = scene.emit(positions)
 
         # Compute the light color.
         if scene.emit_color is None:
             color.fill(1)
         else:
-            scene.emit_color(positions, color)
+            color[:] = scene.emit_color(positions)
 
         with nogil:
             for idx in range(ray_count):
