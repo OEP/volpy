@@ -113,7 +113,7 @@ class TraceRay(threading.Thread):
 
 
 def _default_camera():
-    return Camera(eye=(0., 0., 0.), view=(0., 0., 1.))
+    return Camera(eye=(0., 0., 0., 1), view=(0., 0., 1., 0))
 
 
 def _cast_rays(scene, positions, directions, step, workers, tol, method):

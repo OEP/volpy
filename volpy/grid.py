@@ -6,13 +6,13 @@ class Grid(object):
     def __init__(self, array, transform=None, default=0):
         self.array = np.asarray(array)
         self.default = default
-        self.transform = transform or np.eye(3)
+        self.transform = transform or np.eye(4)
         shape = self.array.shape
         self._shape = np.asarray(shape).reshape(len(shape), 1)
 
     def __call__(self, xyz):
         xyz = np.asarray(xyz)
-        ijk_normalized = np.dot(self.transform, xyz.T)
+        ijk_normalized = np.dot(self.transform, xyz.T)[:3]
         ijk = ijk_normalized * self._shape[:3]
         ijk0 = ijk.astype(np.integer)
         ijk1 = ijk0 + 1

@@ -2,7 +2,7 @@ import numpy as np
 
 import math
 
-from ._util import unit, normalize, ascolumn
+from ._util import unit, normalize, ascolumn, cross
 
 ASPECT_16_9 = 16. / 9.
 ASPECT_16_10 = 16. / 10.
@@ -11,7 +11,7 @@ ASPECT_4_3 = 4. / 3.
 
 class Camera(object):
 
-    def __init__(self, eye, view, up=(0, 1, 0), fov=60.,
+    def __init__(self, eye, view, up=(0, 1, 0, 0), fov=60.,
                  aspect_ratio=ASPECT_16_9, near=0.1, far=2.0,
                  dtype=np.float32):
         self.dtype = dtype
@@ -103,7 +103,7 @@ class Camera(object):
 
         # Set up some arrays for broadcasting.
         count = len(x)
-        shape = (count, 3)
+        shape = (count, 4)
         up = np.tile(self.up, count).reshape(shape)
         right = np.tile(self.right, count).reshape(shape)
         view = np.tile(self.view, count).reshape(shape)
@@ -133,7 +133,7 @@ class Camera(object):
             return
         normalize(view)
         up = unit(up - up.dot(view) * view)
-        right = unit(np.cross(view, up))
+        right = unit(cross(view, up, dtype=self.dtype))
         self._up = up
         self._view = view
         self._right = right

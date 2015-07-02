@@ -14,8 +14,8 @@ class SceneTestCase(unittest.TestCase):
     def test_camera1(self):
         '''Test default camera'''
         self.assertIsInstance(self.scene.camera, volpy.Camera)
-        npt.assert_almost_equal((0, 0, 0), self.scene.camera.eye)
-        npt.assert_almost_equal((0, 0, 1), self.scene.camera.view)
+        npt.assert_almost_equal((0, 0, 0, 1), self.scene.camera.eye)
+        npt.assert_almost_equal((0, 0, 1, 0), self.scene.camera.view)
 
     # XXX no-args render() test case
 

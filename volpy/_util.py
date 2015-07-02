@@ -97,6 +97,18 @@ def normalize(v):
     raise ValueError('Unsupported ndim: %d' % v.ndim)
 
 
+def cross(u, v, dtype=float):
+    '''Cross product for homogenous vectors'''
+    u = np.asarray(u)
+    v = np.asarray(v)
+    if not u.shape == (4,) or not v.shape == (4,):
+        raise ValueError('incompatible dimension for homogenous vectors')
+    x = np.ndarray((4,), dtype=dtype)
+    x[:3] = np.cross(u[:3], v[:3])
+    x[3] = 1
+    return x
+
+
 @contextmanager
 def profile(name):
     global _profile_registered
