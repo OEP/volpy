@@ -1,6 +1,5 @@
 import numpy as np
 import volpy
-import scipy.misc
 from libbenchmark import render, get_parser
 
 
@@ -11,7 +10,7 @@ def main():
     grid = volpy.Grid(np.ones(args.grid_shape), default=args.default)
     scene = volpy.Scene(emit=grid, scatter=args.scatter)
     image = render(scene, args)
-    scipy.misc.imsave(args.output, image)
+    image.save(args.output)
 
 
 def _get_parser():

@@ -1,6 +1,5 @@
 import numpy as np
 import volpy
-import scipy.misc
 from libbenchmark import render, get_parser
 
 CENTER = np.array([0, 0, 2.5])
@@ -33,7 +32,7 @@ def main():
     scene = volpy.Scene(emit=sphere, emit_color=emit_color,
                         scatter=args.scatter)
     image = render(scene, args)
-    scipy.misc.imsave(args.output, image)
+    image.save(args.output)
 
 
 def _get_parser():

@@ -1,11 +1,16 @@
+from PIL import Image
+import numpy as np
+
 import argparse
 
 
 def render(scene, args):
-    return scene.render(
+    array = scene.render(
         args.dimensions, step=args.step, workers=args.workers,
         method=args.method
     )
+    array = (255 * array).astype(np.uint8)
+    return Image.fromarray(array)
 
 
 def get_parser():
