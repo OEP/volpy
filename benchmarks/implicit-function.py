@@ -1,7 +1,7 @@
 import numpy as np
 import volpy
 import scipy.misc
-import argparse
+from libbenchmark import render, get_parser
 
 CENTER = np.array([0, 0, 2.5])
 RADIUS = 1.0
@@ -32,18 +32,12 @@ def main():
 
     scene = volpy.Scene(emit=sphere, emit_color=emit_color,
                         scatter=args.scatter)
-    image = scene.render(args.dimensions, step=args.step, workers=args.workers,
-                         method=args.method)
+    image = render(scene, args)
     scipy.misc.imsave(args.output, image)
 
 
 def _get_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--dimensions', nargs=2, type=int,
-                        default=(1920, 1080))
-    parser.add_argument('-s', '--step', type=float, default=0.001)
-    parser.add_argument('-m', '--method', default='fork')
-    parser.add_argument('-w', '--workers', type=int, default=None)
+    parser = get_parser()
     parser.add_argument('-o', '--output', default='out.png')
     parser.add_argument('-c', '--color', action='store_true')
     parser.add_argument('-k', '--scatter', type=float, default=10)
