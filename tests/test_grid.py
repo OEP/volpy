@@ -49,25 +49,25 @@ class DefaultValueTestCase(unittest.TestCase):
 
     def test_call1(self):
         '''Out of bounds returns default value'''
-        result = self.grid([[-0.1, -0.1, -0.1]])
+        result = self.grid([[-0.1, -0.1, -0.1, 1]])
         expected = [-1]
         npt.assert_almost_equal(expected, result)
 
     def test_call2(self):
         '''In bounds returns grid value'''
-        result = self.grid([[0.5, 0.5, 0.5]])
+        result = self.grid([[0.5, 0.5, 0.5, 1]])
         expected = [1]
         npt.assert_almost_equal(expected, result)
 
     def test_call3(self):
         '''One out of bounds coordinate returns default value (positive)'''
-        result = self.grid([[0.5, 100, 0.5]])
+        result = self.grid([[0.5, 100, 0.5, 1]])
         expected = [-1]
         npt.assert_almost_equal(expected, result)
 
     def test_call4(self):
         '''One out of bounds coordinate returns default value (negative)'''
-        result = self.grid([[-0.1, 0.5, 0.5]])
+        result = self.grid([[-0.1, 0.5, 0.5, 1]])
         expected = [-1]
         npt.assert_almost_equal(expected, result)
 
