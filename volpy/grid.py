@@ -6,7 +6,7 @@ class Grid(object):
     def __init__(self, array, transform=None, default=0):
         self.array = np.asarray(array)
         self.default = default
-        self.transform = transform or np.eye(4)
+        self.transform = transform if transform is not None else np.eye(4)
         shape = self.array.shape
         self._shape = np.asarray(shape).reshape(len(shape), 1)
 
