@@ -9,7 +9,7 @@ exec(open('volpy/version.py').read())
 setup(
     name='volpy',
     version=__version__,
-    ext_modules=cythonize('volpy/_native.pyx'),
+    ext_modules=cythonize('volpy/*.pyx'),
     include_dirs=[np.get_include()],
     packages=['volpy'],
     include_package_data=True,
