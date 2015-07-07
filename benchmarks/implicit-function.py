@@ -2,7 +2,7 @@ import numpy as np
 import volpy
 from libbenchmark import render, get_parser
 
-CENTER = np.array([0, 0, 2.5])
+CENTER = np.array([0, 0, 2.5, 1])
 RADIUS = 1.0
 RED = (1, 0, 0)
 BLUE = (0, 0, 1)
