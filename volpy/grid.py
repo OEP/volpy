@@ -2,6 +2,9 @@ import numpy as np
 
 from ._grid import grid_scalar_eval, grid_vector_eval
 
+MIN_COORDINATE = np.array([-0.5, -0.5, -0.5, 1])
+MAX_COORDINATE = np.array([0.5, 0.5, 0.5, 1])
+
 
 class Grid(object):
 
