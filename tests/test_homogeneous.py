@@ -96,5 +96,5 @@ class HomogenousTestCase(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             result = volpy.cross([1, 0, 0], [0, 1, 0])
         result, = cm.exception.args
-        expected = 'Incompatible dimension for homogenous vectors'
+        expected = 'Incompatible dimension for homogeneous vectors'
         self.assertEqual(expected, result)
