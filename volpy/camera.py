@@ -2,7 +2,8 @@ import numpy as np
 
 import math
 
-from ._util import unit, normalize, ascolumn, cross
+from .homogenous import cross
+from ._util import unit, normalize, ascolumn
 
 ASPECT_16_9 = 16. / 9.
 ASPECT_16_10 = 16. / 10.
