@@ -172,7 +172,7 @@ def rotatexyz(alpha, beta, gamma):
     R : array
         A 4x4 matrix for homogeneous coordinate rotations.
     '''
-    return rotatez(alpha).dot(rotatey(beta).dot(rotatex(gamma)))
+    return rotatez(gamma).dot(rotatey(beta).dot(rotatex(alpha)))
 
 
 def cross(u, v, dtype=float):

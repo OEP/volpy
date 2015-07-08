@@ -69,6 +69,14 @@ class HomogenousTestCase(unittest.TestCase):
         expected = np.eye(4)
         npt.assert_almost_equal(expected, result)
 
+    def test_rotatexyz2(self):
+        result = volpy.rotatexyz(math.pi, 0, 0)
+        expected = np.array([[1, 0, 0, 0],
+                             [0, -1, 0, 0],
+                             [0, 0, -1, 0],
+                             [0, 0, 0, 1]])
+        npt.assert_almost_equal(expected, result)
+
     def test_rotate_axis1(self):
         result = volpy.rotate_axis([1, 0, 0], 0)
         expected = np.eye(4)
