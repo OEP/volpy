@@ -12,7 +12,7 @@ class ScalarGridTestCase(unittest.TestCase):
         self.grid = volpy.Grid(np.ones((100, 100, 100)))
 
     def test_call1(self):
-        result = self.grid([[-0.1, -0.1, -0.1, 1]])
+        result = self.grid([[-0.6, -0.6, -0.6, 1]])
         expected = [0]
         npt.assert_almost_equal(expected, result)
 
@@ -27,17 +27,17 @@ class ScalarGridTestCase(unittest.TestCase):
         npt.assert_almost_equal(expected, result)
 
     def test_call4(self):
-        result = self.grid([[0.98, 0.98, 0.98, 1]])
+        result = self.grid([[0.4, 0.4, 0.4, 1]])
         expected = [1]
         npt.assert_almost_equal(expected, result)
 
     def test_call5(self):
-        result = self.grid([[1, 1, 1, 1]])
+        result = self.grid([[0.5, 0.5, 0.5, 1]])
         expected = [1]
         npt.assert_almost_equal(expected, result)
 
     def test_call6(self):
-        result = self.grid([[1.1, 1.1, 1.1, 1]])
+        result = self.grid([[0.6, 0.6, 0.6, 1]])
         expected = [0]
         npt.assert_almost_equal(expected, result)
 
@@ -49,7 +49,7 @@ class DefaultValueTestCase(unittest.TestCase):
 
     def test_call1(self):
         '''Out of bounds returns default value'''
-        result = self.grid([[-0.1, -0.1, -0.1, 1]])
+        result = self.grid([[-0.6, -0.6, -0.6, 1]])
         expected = [-1]
         npt.assert_almost_equal(expected, result)
 
@@ -67,7 +67,7 @@ class DefaultValueTestCase(unittest.TestCase):
 
     def test_call4(self):
         '''One out of bounds coordinate returns default value (negative)'''
-        result = self.grid([[-0.1, 0.5, 0.5, 1]])
+        result = self.grid([[-0.6, 0.5, 0.5, 1]])
         expected = [-1]
         npt.assert_almost_equal(expected, result)
 
@@ -78,31 +78,26 @@ class VectorGridTestCase(unittest.TestCase):
         self.grid = volpy.Grid(np.ones((100, 100, 100, 3)))
 
     def test_call1(self):
-        result = self.grid([[-0.1, -0.1, -0.1, 1]])
+        result = self.grid([[-0.6, -0.6, -0.6, 1]])
         expected = [[0, 0, 0]]
         npt.assert_almost_equal(expected, result)
 
     def test_call2(self):
-        result = self.grid([[0, 0, 0, 1]])
+        result = self.grid([[-0.5, -0.5, -0.5, 1]])
         expected = [[1, 1, 1]]
         npt.assert_almost_equal(expected, result)
 
     def test_call3(self):
-        result = self.grid([[0.5, 0.5, 0.5, 1]])
+        result = self.grid([[0, 0, 0, 1]])
         expected = [[1, 1, 1]]
         npt.assert_almost_equal(expected, result)
 
     def test_call4(self):
-        result = self.grid([[0.98, 0.98, 0.98, 1]])
+        result = self.grid([[0.5, 0.5, 0.5, 1]])
         expected = [[1, 1, 1]]
         npt.assert_almost_equal(expected, result)
 
     def test_call5(self):
-        result = self.grid([[1, 1, 1, 1]])
-        expected = [[1, 1, 1]]
-        npt.assert_almost_equal(expected, result)
-
-    def test_call6(self):
-        result = self.grid([[1.1, 1.1, 1.1, 1]])
+        result = self.grid([[0.6, 0.6, 0.6, 1]])
         expected = [[0, 0, 0]]
         npt.assert_almost_equal(expected, result)
