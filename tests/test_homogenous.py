@@ -86,3 +86,15 @@ class HomogenousTestCase(unittest.TestCase):
         result = volpy.rotate_axis([1, 0, 0], math.pi).dot(ONES.T).T
         expected = [[1, -1, -1, 1]]
         npt.assert_almost_equal(expected, result)
+
+    def test_cross1(self):
+        result = volpy.cross([1, 0, 0, 0], [0, 1, 0, 0])
+        expected = [0, 0, 1, 0]
+        npt.assert_almost_equal(expected, result)
+
+    def test_cross2(self):
+        with self.assertRaises(ValueError) as cm:
+            result = volpy.cross([1, 0, 0], [0, 1, 0])
+        result, = cm.exception.args
+        expected = 'Incompatible dimension for homogenous vectors'
+        self.assertEqual(expected, result)
