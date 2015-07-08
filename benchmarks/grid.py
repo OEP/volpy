@@ -16,7 +16,9 @@ def main():
     if args.scale:
         transform = volpy.scale(*args.scale).dot(transform)
     if args.translate:
-        transform = volpy.translate(*args.translate).dot(transform)
+        transform = volpy.translate(-args.translate[0],
+                                    -args.translate[1],
+                                    -args.translate[2]).dot(transform)
 
     grid = volpy.Grid(np.ones(args.grid_shape),
                       transform=transform,
