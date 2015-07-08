@@ -43,11 +43,14 @@ cdef RESULT_t grid_scalar_eval_at(
 
     grid_transform(xyz, transform, idx, &i, &j, &k)
     if (
-        i < 0 or i > 1
-        or j < 0 or j > 1
-        or k < 0 or k > 1
+        i < -0.5 or i > 0.5
+        or j < -0.5 or j > 0.5
+        or k < -0.5 or k > 0.5
     ):
         return default
+    i += 0.5
+    j += 0.5
+    k += 0.5
 
     i0 = int(i)
     j0 = int(j)
