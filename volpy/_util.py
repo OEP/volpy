@@ -105,7 +105,7 @@ def cross(u, v, dtype=float):
         raise ValueError('incompatible dimension for homogenous vectors')
     x = np.ndarray((4,), dtype=dtype)
     x[:3] = np.cross(u[:3], v[:3])
-    x[3] = 1
+    x[3] = 0
     return x
 
 
