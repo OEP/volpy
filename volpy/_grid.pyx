@@ -13,8 +13,10 @@ cpdef void grid_scalar_eval(
     RESULT_t [:] result,
 ) nogil:
     cdef int count = xyz.shape[0], idx
-    for idx in range(count):
-        result[idx] = grid_scalar_eval_at(array, transform, xyz, default, idx)
+    with nogil:
+        for idx in range(count):
+            result[idx] = grid_scalar_eval_at(array, transform, xyz, default,
+                                              idx)
 
 
 cpdef void grid_vector_eval(
@@ -25,10 +27,11 @@ cpdef void grid_vector_eval(
     RESULT_t [:, :] result,
 ) nogil:
     cdef int count = xyz.shape[0], dim = array.shape[3], i, j
-    for i in range(count):
-        for j in range(dim):
-            result[i, j] = grid_scalar_eval_at(array[:, :, :, j],
-                                               transform, xyz, default, i)
+    with nogil:
+        for i in range(count):
+            for j in range(dim):
+                result[i, j] = grid_scalar_eval_at(array[:, :, :, j],
+                                                   transform, xyz, default, i)
 
 
 cdef RESULT_t grid_scalar_eval_at(
