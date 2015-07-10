@@ -42,3 +42,11 @@ class SceneTestCase(unittest.TestCase):
         result, = cm.exception.args
         expected = 'Shape must have length 2'
         self.assertEqual(expected, result)
+
+    def test_render4(self):
+        '''At least one density element must be set.'''
+        with self.assertRaises(ValueError) as cm:
+            self.scene.render(self.shape)
+        result, = cm.exception.args
+        expected = 'At least one scene element is required.'
+        self.assertEqual(expected, result)

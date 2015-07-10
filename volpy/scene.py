@@ -8,18 +8,38 @@ from ._util import cartesian
 from ._native import cast_rays
 
 
+class Element(object):
+
+    def __init__(self, density, color=None):
+        '''
+        Element constructor.
+
+        Parameters
+        ----------
+        density : callable
+            A callable which takes an (N, 3) array of positions and returns a
+            shape (N,) array representing the density at each of the positions.
+        color : callable or None
+            A callable which takes a (N, 3) array of positions and returns a
+            shape (N, 3) array representing the normalized red, green, and blue
+            color values at each of the positions. If color is None, it is
+            assumed to be white throughout.
+        '''
+        self.density = density
+        self.color = color
+
+
 class Scene(object):
 
-    def __init__(self, emit=None, emit_color=None, camera=None, scatter=1.):
+    def __init__(self, emit=None, camera=None, scatter=1.):
         '''
         Scene constructor.
 
         Parameters
         ----------
-        emit : callable
-            A scalar field callable representing the emission of the object.
-        emit_color : callable
-            A color field callable respresenting the color of the emission.
+        emit : callable or Element
+            A emissive density element. If not of type Element, it is assumed
+            to be the density callable.
         camera : Camera
             The camera for the rendered image.
         scatter : float
@@ -27,8 +47,7 @@ class Scene(object):
             a density looks in the resulting image.
 
         '''
-        self.emit = emit
-        self.emit_color = emit_color
+        self.emit = _wrap_element(emit)
         self.camera = camera or _default_camera()
         self.scatter = scatter
 
@@ -75,6 +94,8 @@ class Scene(object):
             raise ValueError('Shape must have length 2')
         if step is None:
             step = (self.camera.far - self.camera.near) / 100
+        if self.emit is None:
+            raise ValueError('At least one scene element is required.')
 
         origins, directions = self._linspace_rays(shape)
         pixels = shape[0] * shape[1]
@@ -164,3 +185,10 @@ def _cast_rays_fork(jobs):
 def _run_job(job):
     return cast_rays(job.scene, job.positions, job.directions, job.step,
                      job.tol)
+
+def _wrap_element(element):
+    if element is None:
+        return element
+    if not isinstance(element, Element):
+        return Element(element)
+    return element

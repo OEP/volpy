@@ -20,10 +20,9 @@ def cast_rays(
     cdef np.ndarray[DTYPE_t, ndim=2] light = np.zeros((ray_count, 4), dtype=DTYPE)
     cdef np.ndarray[DTYPE_t, ndim=1] transmissivity = np.ones((ray_count,), dtype=DTYPE)
 
-    cdef np.ndarray[DTYPE_t, ndim=1] emit_density = np.ndarray((ray_count,),
-                                                               dtype=DTYPE)
-    cdef np.ndarray[DTYPE_t, ndim=2] emit_color = np.ndarray((ray_count, 3),
-                                                             dtype=DTYPE)
+    cdef np.ndarray[DTYPE_t, ndim=1] emit_density = np.zeros(ray_count, dtype=DTYPE)
+    cdef np.ndarray[DTYPE_t, ndim=2] emit_color = np.ones((ray_count, 3),
+                                                          dtype=DTYPE)
 
     while (
         distance < far
@@ -31,22 +30,32 @@ def cast_rays(
     ):
         # XXX Cull rays which have no transmissivity
 
-        # The client will put their results in the emit_buffer variable which
-        # has ndim=1. This is a bit more natural that needing to reshape into
-        # an ndim=2 array every time.
-        emit_density[:] = scene.emit(positions)
+        _handle_element(scene.emit, positions, emit_density, emit_color)
 
         # Compute the light color.
-        if scene.emit_color is None:
+        if scene.emit.color is None:
             emit_color.fill(1)
         else:
-            emit_color[:] = scene.emit_color(positions)
+            emit_color[:] = scene.emit.color(positions)
         _march(positions, directions, transmissivity,
                emit_density, emit_color,
                light, step, optical_length)
         distance += step
     light[:, 3] = np.reshape(1 - transmissivity, ray_count)
     return light
+
+
+def _handle_element(
+    element,
+    np.ndarray[DTYPE_t, ndim=2] positions,
+    np.ndarray[DTYPE_t, ndim=1] density,
+    np.ndarray[DTYPE_t, ndim=2] color
+):
+    if element is None:
+        return
+    density[:] = element.density(positions)
+    if element.color is not None:
+        color[:] = element.color(positions)
 
 
 cdef _march(

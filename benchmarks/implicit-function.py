@@ -29,8 +29,8 @@ def main():
     else:
         emit_color = None
 
-    scene = volpy.Scene(emit=sphere, emit_color=emit_color,
-                        scatter=args.scatter)
+    element = volpy.Element(sphere, emit_color)
+    scene = volpy.Scene(emit=element, scatter=args.scatter)
     image = render(scene, args)
     image.save(args.output)
 
