@@ -186,6 +186,7 @@ def _run_job(job):
     return cast_rays(job.scene, job.positions, job.directions, job.step,
                      job.tol)
 
+
 def _wrap_element(element):
     if element is None:
         return element
