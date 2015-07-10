@@ -16,19 +16,14 @@ def cast_rays(
     cdef float distance = scene.camera.near, far = scene.camera.far
     cdef int ray_count = positions.shape[0]
     cdef float optical_length = scene.scatter * step
-    cdef int idx
 
-    cdef np.ndarray[DTYPE_t, ndim=2] color = np.ndarray((ray_count, 3), dtype=DTYPE)
     cdef np.ndarray[DTYPE_t, ndim=2] light = np.zeros((ray_count, 4), dtype=DTYPE)
     cdef np.ndarray[DTYPE_t, ndim=1] transmissivity = np.ones((ray_count,), dtype=DTYPE)
-    cdef np.ndarray[DTYPE_t, ndim=1] density = np.ndarray((ray_count,), dtype=DTYPE)
 
-    cdef DTYPE_t [:] density_view = density
-    cdef DTYPE_t [:] transmissivity_view =  transmissivity
-    cdef DTYPE_t [:, :] color_view = color
-    cdef DTYPE_t [:, :] light_view = light
-    cdef DTYPE_t [:, :] positions_view = positions
-    cdef DTYPE_t [:, :] directions_view = directions
+    cdef np.ndarray[DTYPE_t, ndim=1] emit_density = np.ndarray((ray_count,),
+                                                               dtype=DTYPE)
+    cdef np.ndarray[DTYPE_t, ndim=2] emit_color = np.ndarray((ray_count, 3),
+                                                             dtype=DTYPE)
 
     while (
         distance < far
@@ -39,32 +34,46 @@ def cast_rays(
         # The client will put their results in the emit_buffer variable which
         # has ndim=1. This is a bit more natural that needing to reshape into
         # an ndim=2 array every time.
-        density[:] = scene.emit(positions)
+        emit_density[:] = scene.emit(positions)
 
         # Compute the light color.
         if scene.emit_color is None:
-            color.fill(1)
+            emit_color.fill(1)
         else:
-            color[:] = scene.emit_color(positions)
-
-        with nogil:
-            for idx in range(ray_count):
-                density_view[idx] = math.exp(-optical_length * density_view[idx])
-
-                color_view[idx, 0] *= (1 - density_view[idx]) * transmissivity_view[idx]
-                color_view[idx, 1] *= (1 - density_view[idx]) * transmissivity_view[idx]
-                color_view[idx, 2] *= (1 - density_view[idx]) * transmissivity_view[idx]
-
-                light_view[idx, 0] += color_view[idx, 0]
-                light_view[idx, 1] += color_view[idx, 1]
-                light_view[idx, 2] += color_view[idx, 2]
-
-                transmissivity_view[idx] *= density_view[idx]
-
-                # Cast the rays forward one step.
-                positions_view[idx, 0] += step * directions_view[idx, 0]
-                positions_view[idx, 1] += step * directions_view[idx, 1]
-                positions_view[idx, 2] += step * directions_view[idx, 2]
-            distance += step
+            emit_color[:] = scene.emit_color(positions)
+        _march(positions, directions, transmissivity,
+               emit_density, emit_color,
+               light, step, optical_length)
+        distance += step
     light[:, 3] = np.reshape(1 - transmissivity, ray_count)
     return light
+
+
+cdef _march(
+    DTYPE_t [:, :] positions,
+    DTYPE_t [:, :] directions,
+    DTYPE_t [:] transmissivity,
+    DTYPE_t [:] emit_density,
+    DTYPE_t [:, :] emit_color,
+    DTYPE_t [:, :] light,
+    float step,
+    float optical_length,
+):
+    with nogil:
+        for idx in range(positions.shape[0]):
+            emit_density[idx] = math.exp(-optical_length * emit_density[idx])
+
+            emit_color[idx, 0] *= (1 - emit_density[idx]) * transmissivity[idx]
+            emit_color[idx, 1] *= (1 - emit_density[idx]) * transmissivity[idx]
+            emit_color[idx, 2] *= (1 - emit_density[idx]) * transmissivity[idx]
+
+            light[idx, 0] += emit_color[idx, 0]
+            light[idx, 1] += emit_color[idx, 1]
+            light[idx, 2] += emit_color[idx, 2]
+
+            transmissivity[idx] *= emit_density[idx]
+
+            # Cast the rays forward one step.
+            positions[idx, 0] += step * directions[idx, 0]
+            positions[idx, 1] += step * directions[idx, 1]
+            positions[idx, 2] += step * directions[idx, 2]
