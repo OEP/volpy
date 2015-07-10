@@ -8,6 +8,7 @@ from abc import ABCMeta, abstractmethod
 from .homogeneous import translate, scale
 from .grid import MIN_COORDINATE, MAX_COORDINATE
 
+
 class Geometry(object, metaclass=ABCMeta):
 
     @abstractmethod
