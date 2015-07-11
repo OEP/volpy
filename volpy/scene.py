@@ -31,14 +31,14 @@ class Element(object):
 
 class Scene(object):
 
-    def __init__(self, emit=None, camera=None, scatter=1.):
+    def __init__(self, ambient=None, camera=None, scatter=1.):
         '''
         Scene constructor.
 
         Parameters
         ----------
-        emit : callable or Element
-            A emissive density element. If not of type Element, it is assumed
+        ambient : callable or Element
+            An ambient density element. If not of type Element, it is assumed
             to be the density callable.
         camera : Camera
             The camera for the rendered image.
@@ -47,7 +47,7 @@ class Scene(object):
             a density looks in the resulting image.
 
         '''
-        self.emit = _wrap_element(emit)
+        self.ambient = _wrap_element(ambient)
         self.camera = camera or _default_camera()
         self.scatter = scatter
 
@@ -94,7 +94,7 @@ class Scene(object):
             raise ValueError('Shape must have length 2')
         if step is None:
             step = (self.camera.far - self.camera.near) / 100
-        if self.emit is None:
+        if self.ambient is None:
             raise ValueError('At least one scene element is required.')
 
         origins, directions = self._linspace_rays(shape)

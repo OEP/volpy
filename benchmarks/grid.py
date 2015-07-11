@@ -23,7 +23,7 @@ def main():
     grid = volpy.Grid(np.ones(args.grid_shape),
                       transform=transform,
                       default=args.default)
-    scene = volpy.Scene(emit=grid, scatter=args.scatter)
+    scene = volpy.Scene(ambient=grid, scatter=args.scatter)
     image = render(scene, args)
     image.save(args.output)
 

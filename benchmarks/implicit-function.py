@@ -25,12 +25,12 @@ def main():
     args = parser.parse_args()
 
     if args.color:
-        emit_color = sphere_color
+        ambient_color = sphere_color
     else:
-        emit_color = None
+        ambient_color = None
 
-    element = volpy.Element(sphere, emit_color)
-    scene = volpy.Scene(emit=element, scatter=args.scatter)
+    element = volpy.Element(sphere, ambient_color)
+    scene = volpy.Scene(ambient=element, scatter=args.scatter)
     image = render(scene, args)
     image.save(args.output)
 
