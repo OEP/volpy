@@ -32,11 +32,6 @@ def cast_rays(
 
         _handle_element(scene.emit, positions, emit_density, emit_color)
 
-        # Compute the light color.
-        if scene.emit.color is None:
-            emit_color.fill(1)
-        else:
-            emit_color[:] = scene.emit.color(positions)
         _march(positions, directions, transmissivity,
                emit_density, emit_color,
                light, step, optical_length)
