@@ -31,7 +31,7 @@ class Element(object):
 
 class Scene(object):
 
-    def __init__(self, ambient=None, camera=None, scatter=1.):
+    def __init__(self, ambient=None, diffuse=None, camera=None, scatter=1.):
         '''
         Scene constructor.
 
@@ -40,6 +40,9 @@ class Scene(object):
         ambient : callable or Element
             An ambient density element. If not of type Element, it is assumed
             to be the density callable.
+        diffuse : callable or Element
+            A diffuse density element. If not of type Element, it is assumed to
+            be the density callable.
         camera : Camera
             The camera for the rendered image.
         scatter : float
@@ -48,6 +51,7 @@ class Scene(object):
 
         '''
         self.ambient = _wrap_element(ambient)
+        self.diffuse = _wrap_element(diffuse)
         self.camera = camera or _default_camera()
         self.scatter = scatter
 
@@ -94,7 +98,7 @@ class Scene(object):
             raise ValueError('Shape must have length 2')
         if step is None:
             step = (self.camera.far - self.camera.near) / 100
-        if self.ambient is None:
+        if self.ambient is None and self.diffuse is None:
             raise ValueError('At least one scene element is required.')
 
         origins, directions = self._linspace_rays(shape)

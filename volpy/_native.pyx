@@ -23,6 +23,9 @@ def cast_rays(
     cdef np.ndarray[DTYPE_t, ndim=1] ambient_density = np.zeros(ray_count, dtype=DTYPE)
     cdef np.ndarray[DTYPE_t, ndim=2] ambient_color = np.ones((ray_count, 3),
                                                           dtype=DTYPE)
+    cdef np.ndarray[DTYPE_t, ndim=1] diffuse_density = np.zeros(ray_count, dtype=DTYPE)
+    cdef np.ndarray[DTYPE_t, ndim=2] diffuse_color = np.ones((ray_count, 3),
+                                                          dtype=DTYPE)
 
     while (
         distance < far
@@ -31,9 +34,11 @@ def cast_rays(
         # XXX Cull rays which have no transmissivity
 
         _handle_element(scene.ambient, positions, ambient_density, ambient_color)
+        _handle_element(scene.diffuse, positions, diffuse_density, diffuse_color)
 
         _march(positions, directions, transmissivity,
                ambient_density, ambient_color,
+               diffuse_density, diffuse_color,
                light, step, optical_length)
         distance += step
     light[:, 3] = np.reshape(1 - transmissivity, ray_count)
@@ -59,25 +64,44 @@ cdef _march(
     DTYPE_t [:] transmissivity,
     DTYPE_t [:] ambient_density,
     DTYPE_t [:, :] ambient_color,
+    DTYPE_t [:] diffuse_density,
+    DTYPE_t [:, :] diffuse_color,
     DTYPE_t [:, :] light,
     float step,
     float optical_length,
 ):
-    cdef float weight
+    cdef float weight, total_density, dt
+    cdef float[3] total_color
     with nogil:
         for idx in range(positions.shape[0]):
-            ambient_density[idx] = math.exp(-optical_length * ambient_density[idx])
+            total_density = ambient_density[idx] + diffuse_density[idx]
+            dt = math.exp(-optical_length * total_density)
 
-            weight = (1 - ambient_density[idx]) * transmissivity[idx]
-            ambient_color[idx, 0] *= weight
-            ambient_color[idx, 1] *= weight
-            ambient_color[idx, 2] *= weight
+            if total_density > 0:
 
-            light[idx, 0] += ambient_color[idx, 0]
-            light[idx, 1] += ambient_color[idx, 1]
-            light[idx, 2] += ambient_color[idx, 2]
+                # Add ambient component
+                total_color[0] = ambient_color[idx, 0] * ambient_density[idx]
+                total_color[1] = ambient_color[idx, 1] * ambient_density[idx]
+                total_color[2] = ambient_color[idx, 2] * ambient_density[idx]
 
-            transmissivity[idx] *= ambient_density[idx]
+                # XXX Add diffuse component
+
+                # Weight all color contributions with respect to the total
+                # density.
+                total_color[0] /= total_density
+                total_color[1] /= total_density
+                total_color[2] /= total_density
+
+                weight = (1 - dt) * transmissivity[idx]
+                total_color[0] *= weight
+                total_color[1] *= weight
+                total_color[2] *= weight
+
+                light[idx, 0] += total_color[0]
+                light[idx, 1] += total_color[1]
+                light[idx, 2] += total_color[2]
+
+            transmissivity[idx] *= dt
 
             # Cast the rays forward one step.
             positions[idx, 0] += step * directions[idx, 0]
