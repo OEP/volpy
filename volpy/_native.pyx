@@ -26,23 +26,43 @@ def cast_rays(
     cdef np.ndarray[DTYPE_t, ndim=1] diffuse_density = np.zeros(ray_count, dtype=DTYPE)
     cdef np.ndarray[DTYPE_t, ndim=2] diffuse_color = np.ones((ray_count, 3),
                                                           dtype=DTYPE)
+    cdef np.ndarray[DTYPE_t, ndim=1] light_dsm = np.zeros(ray_count, dtype=DTYPE)
+    cdef np.ndarray[DTYPE_t, ndim=2] light_field = np.zeros((ray_count, 3),
+                                                            dtype=DTYPE)
 
     while (
         distance < far
         and np.any(transmissivity > tol)
     ):
         # XXX Cull rays which have no transmissivity
-
         _handle_element(scene.ambient, positions, ambient_density, ambient_color)
         _handle_element(scene.diffuse, positions, diffuse_density, diffuse_color)
+
+        # Fetch lighting information only if a diffuse density was provided.
+        if scene.diffuse is not None:
+            _handle_lights(scene, positions, light_dsm, light_field)
 
         _march(positions, directions, transmissivity,
                ambient_density, ambient_color,
                diffuse_density, diffuse_color,
+               light_field,
                light, step, optical_length)
         distance += step
     light[:, 3] = np.reshape(1 - transmissivity, ray_count)
     return light
+
+
+def _handle_lights(
+    scene,
+    np.ndarray[DTYPE_t, ndim=2] positions,
+    np.ndarray[DTYPE_t, ndim=1] dsm,
+    np.ndarray[DTYPE_t, ndim=2] color,
+):
+    # XXX Add phase function.
+    color.fill(0)
+    for light in scene.lights:
+        dsm[:] = light.field(positions)
+        color += light.color * np.exp(-dsm * scene.scatter).reshape(len(dsm), 1)
 
 
 def _handle_element(
@@ -66,6 +86,7 @@ cdef _march(
     DTYPE_t [:, :] ambient_color,
     DTYPE_t [:] diffuse_density,
     DTYPE_t [:, :] diffuse_color,
+    DTYPE_t [:, :] light_field,
     DTYPE_t [:, :] light,
     float step,
     float optical_length,
@@ -78,13 +99,21 @@ cdef _march(
             dt = math.exp(-optical_length * total_density)
 
             if total_density > 0:
-
                 # Add ambient component
                 total_color[0] = ambient_color[idx, 0] * ambient_density[idx]
                 total_color[1] = ambient_color[idx, 1] * ambient_density[idx]
                 total_color[2] = ambient_color[idx, 2] * ambient_density[idx]
 
-                # XXX Add diffuse component
+                # Add diffuse component
+                total_color[0] += (light_field[idx, 0]
+                                   * diffuse_color[idx, 0]
+                                   * diffuse_density[idx])
+                total_color[1] += (light_field[idx, 1]
+                                   * diffuse_color[idx, 1]
+                                   * diffuse_density[idx])
+                total_color[2] += (light_field[idx, 2]
+                                   * diffuse_color[idx, 2]
+                                   * diffuse_density[idx])
 
                 # Weight all color contributions with respect to the total
                 # density.

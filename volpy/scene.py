@@ -29,6 +29,13 @@ class Element(object):
         self.color = color
 
 
+class Light(object):
+
+    def __init__(self, field, color=(1, 1, 1)):
+        self.field = field
+        self.color = color
+
+
 class Scene(object):
 
     def __init__(self, ambient=None, diffuse=None, camera=None, scatter=1.):
@@ -54,6 +61,7 @@ class Scene(object):
         self.diffuse = _wrap_element(diffuse)
         self.camera = camera or _default_camera()
         self.scatter = scatter
+        self.lights = []
 
     def render(self, shape, step=None, workers=None, tol=1e-6,
                method='thread'):

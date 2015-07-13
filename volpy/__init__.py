@@ -1,5 +1,5 @@
 from .camera import Camera
-from .scene import Scene, Element
+from .scene import Scene, Element, Light
 from .version import __version__
 from .grid import Grid
 from .homogeneous import (translate, scale, rotatex, rotatey, rotatez, rotatexyz,
