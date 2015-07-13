@@ -20,17 +20,26 @@ def sphere_color(x):
     return mask * RED + (1 - mask) * BLUE
 
 
+def plane_light(x):
+    f = x[:, 1] / 2
+    return np.where(f > 0, f, 0)
+
+
 def main():
     parser = _get_parser()
     args = parser.parse_args()
 
+    element = volpy.Element(sphere)
     if args.color:
-        ambient_color = sphere_color
-    else:
-        ambient_color = None
+        element.color = sphere_color
 
-    element = volpy.Element(sphere, ambient_color)
-    scene = volpy.Scene(ambient=element, scatter=args.scatter)
+    scene = volpy.Scene(scatter=args.scatter)
+    if args.diffuse:
+        scene.diffuse = element
+        scene.lights.append(volpy.Light(plane_light))
+    else:
+        scene.ambient = element
+
     image = render(scene, args)
     image.save(args.output)
 
@@ -40,6 +49,7 @@ def _get_parser():
     parser.add_argument('-o', '--output', default='out.png')
     parser.add_argument('-c', '--color', action='store_true')
     parser.add_argument('-k', '--scatter', type=float, default=10)
+    parser.add_argument('-D', '--diffuse', action='store_true')
     return parser
 
 if __name__ == '__main__':
