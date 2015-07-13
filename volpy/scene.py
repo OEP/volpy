@@ -32,6 +32,18 @@ class Element(object):
 class Light(object):
 
     def __init__(self, field, color=(1, 1, 1)):
+        '''
+        Light constructor.
+
+        Parameters
+        ----------
+        field : callable
+            A callable which takes an (N, 3) array of positions and returns a
+            shape (N,) array representing the amount of shadowing at each
+            position.
+        color : tuple
+            Tuple of 3 floats representing the RGB color of the light.
+        '''
         self.field = field
         self.color = color
 
