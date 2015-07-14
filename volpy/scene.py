@@ -128,7 +128,7 @@ class Scene(object):
         light = _cast_rays(self, origins, directions, step, workers, tol,
                            method)
         image += light
-        return image.reshape((shape[1], shape[0], 4))
+        return image[::-1].reshape((shape[1], shape[0], 4))
 
     def _linspace_rays(self, shape):
         imy, imx = cartesian([np.linspace(0, 1, shape[1]),
