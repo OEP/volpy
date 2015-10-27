@@ -36,7 +36,8 @@ def _get_parser():
     parser.add_argument('-o', '--output', default='out.png')
     parser.add_argument('-c', '--color', action='store_true')
     parser.add_argument('-k', '--scatter', type=float, default=10)
-    parser.add_argument('-T', '--translate', type=float, nargs=3)
+    parser.add_argument('-T', '--translate', type=float, default=[0, 0, 2],
+                        nargs=3)
     parser.add_argument('-R', '--rotate', type=float, nargs=3)
     parser.add_argument('-S', '--scale', type=float, nargs=3)
     return parser
