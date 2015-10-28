@@ -1,6 +1,9 @@
 from setuptools import setup
 from Cython.Build import cythonize
 import numpy as np
+import os
+
+os.chdir(os.path.dirname(__file__))
 
 __version__ = None
 exec(open('volpy/version.py').read())
