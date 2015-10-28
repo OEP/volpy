@@ -73,8 +73,13 @@ def _handle_element(
 ):
     if element is None:
         return
-    density[:] = element.density(positions)
-    if element.color is not None:
+    if isinstance(element.density, (int, float)):
+        density[:] = element.density
+    else:
+        density[:] = element.density(positions)
+    if isinstance(element.color, (tuple, list, np.ndarray)):
+        color[:] = element.color
+    elif element.color is not None:
         color[:] = element.color(positions)
 
 
