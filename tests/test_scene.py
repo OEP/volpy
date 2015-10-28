@@ -1,4 +1,5 @@
 import numpy.testing as npt
+import numpy as np
 
 import unittest
 
@@ -50,3 +51,47 @@ class SceneTestCase(unittest.TestCase):
         result, = cm.exception.args
         expected = 'At least one scene element is required.'
         self.assertEqual(expected, result)
+
+    def test_render5(self):
+        '''Invalid render method specified'''
+        self.scene.ambient = volpy.Element(1)
+        with self.assertRaises(ValueError) as cm:
+            self.scene.render(self.shape, method='spoon')
+        result, = cm.exception.args
+        expected = 'Invalid method: spoon'
+        self.assertEqual(expected, result)
+
+    def test_render6(self):
+        '''Scene.render() produces an image'''
+        self.scene.ambient = volpy.Element(1)
+        image = self.scene.render(self.shape)
+        self.assertEqual((100, 100, 4), image.shape)
+        pixel = image[0, 0]
+
+        # Pixel RGBA values should all be the same positive value.
+        self.assertTrue((pixel > 0).all())
+        self.assertTrue(np.allclose(pixel[0], pixel))
+        self.assertTrue(np.allclose(pixel[0], image))
+
+    def test_render7(self):
+        '''Scene.render() with a color argument'''
+        self.scene.ambient = volpy.Element(1, (1, 0, 0))
+        image = self.scene.render(self.shape)
+        self.assertEqual((100, 100, 4), image.shape)
+        pixel = image[0, 0]
+        r, g, b, a = pixel
+
+        # Red and alpha channels should be positive and the same. Green and
+        # blue channels should be zero.
+        self.assertTrue(r > 0 and a > 0)
+        self.assertTrue(np.isclose(g, 0) and np.isclose(b, 0))
+        self.assertTrue(np.allclose(r, image[:, :, 0]))
+        self.assertTrue(np.allclose(g, image[:, :, 1]))
+        self.assertTrue(np.allclose(b, image[:, :, 2]))
+        self.assertTrue(np.allclose(a, image[:, :, 3]))
+
+    def test_render8(self):
+        '''Scene.render() with fork method'''
+        self.scene.ambient = volpy.Element(1)
+        image = self.scene.render(self.shape, workers=2, method='fork')
+        self.assertEqual((100, 100, 4), image.shape)
