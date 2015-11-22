@@ -6,6 +6,10 @@ import numpy.testing as npt
 import unittest
 
 
+def _scalar_stamp(xyz):
+    return xyz[:, 0]
+
+
 class ScalarGridTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -40,6 +44,35 @@ class ScalarGridTestCase(unittest.TestCase):
         result = self.grid([[0.6, 0.6, 0.6, 1]])
         expected = [0]
         npt.assert_almost_equal(expected, result)
+
+    def test_indices1(self):
+        result = self.grid.indices()
+        self.assertEqual((100**3, 3), result.shape)
+        npt.assert_almost_equal((0, 0, 0), result[0])
+        npt.assert_almost_equal((99, 99, 99), result[100**3 - 1])
+
+    def test_igspace1(self):
+        indices = self.grid.indices()
+        result = self.grid.igspace(indices)
+        self.assertEqual((100**3, 4), result.shape)
+        npt.assert_almost_equal((-0.5, -0.5, -0.5, 1), result[0])
+        npt.assert_almost_equal((0.5, 0.5, 0.5, 1), result[100**3 - 1])
+
+    def test_gwspace1(self):
+        indices = self.grid.indices()
+        gspace = self.grid.igspace(indices)
+        result = self.grid.gwspace(gspace)
+        self.assertEqual((100**3, 4), result.shape)
+        npt.assert_almost_equal((-0.5, -0.5, -0.5, 1), result[0])
+        npt.assert_almost_equal((0.5, 0.5, 0.5, 1), result[100**3 - 1])
+
+    def test_nelements1(self):
+        self.assertEqual(self.grid.nelements, 100**3)
+
+    def test_stamp1(self):
+        self.grid.stamp(_scalar_stamp)
+        npt.assert_almost_equal(-0.5, self.grid.array[0, :, :])
+        npt.assert_almost_equal(0.5, self.grid.array[99, :, :])
 
 
 class DefaultValueTestCase(unittest.TestCase):
@@ -101,3 +134,5 @@ class VectorGridTestCase(unittest.TestCase):
         result = self.grid([[0.6, 0.6, 0.6, 1]])
         expected = [[0, 0, 0]]
         npt.assert_almost_equal(expected, result)
+
+    # XXX: Tests for stamp() with vector grids.
