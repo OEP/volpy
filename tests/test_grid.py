@@ -74,6 +74,11 @@ class ScalarGridTestCase(unittest.TestCase):
         npt.assert_almost_equal(-0.5, self.grid.array[0, :, :])
         npt.assert_almost_equal(0.5, self.grid.array[99, :, :])
 
+    def test_pstamp1(self):
+        self.grid.pstamp(_scalar_stamp)
+        npt.assert_almost_equal(-0.5, self.grid.array[0, :, :])
+        npt.assert_almost_equal(0.5, self.grid.array[99, :, :])
+
 
 class DefaultValueTestCase(unittest.TestCase):
 

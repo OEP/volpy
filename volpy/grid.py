@@ -5,6 +5,7 @@ Fast grid evaluation for NumPy arrays.
 import numpy as np
 
 from ._grid import grid_scalar_eval, grid_vector_eval
+from .peval import peval
 
 MIN_COORDINATE = np.array([-0.5, -0.5, -0.5, 1])
 MAX_COORDINATE = np.array([0.5, 0.5, 0.5, 1])
@@ -140,9 +141,47 @@ class Grid(object):
             the corresponding indices.
 
         '''
+        return self._stamp(field)
+
+    def pstamp(self, field, method='thread', workers=None):
+        '''
+        Like ``stamp()`` but use ``volpy.peval()`` to do the evaluation.
+
+        Parameters
+        ----------
+        field : callable
+            A field function. Will be called with the world-space coordinates
+            of the grid. The returned values will overwrite the grid values at
+            the corresponding indices.
+        field : callable
+            A field function. Will be called with the world-space coordinates
+            of the grid. The returned values will overwrite the grid values at
+            the corresponding indices.
+        method : str
+            Either 'thread' or 'fork'. Determines the concurrency method used
+            for evaluating. With 'thread' multiple threads are launched. With
+            'fork' multiple processes are launched. Note that threads are more
+            likely to have less CPU utilization due to the GIL. Processes are
+            not as likely, but their memory will be duplicated.
+        workers : int or None
+            Number of worker threads/processes. If None, use the number of CPUs
+            returned by ``multiprocessing.cpu_count()``.
+
+        '''
+        return self._stamp(field, parallel=True, method=method,
+                           workers=workers)
+
+    def _stamp(self, field, parallel=False, method='thread', workers=None):
+        '''
+        Common internal implementation for stamp() and pstamp().
+
+        '''
         indices = self.indices()
         gspace = self.igspace(indices)
         wspace = self.gwspace(gspace)
-        result = field(wspace)
+        if parallel:
+            result = peval(field, wspace, method=method, workers=workers)
+        else:
+            result = field(wspace)
         i, j, k = indices.transpose()
         self.array[i, j, k] = result
