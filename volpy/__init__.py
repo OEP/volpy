@@ -2,7 +2,8 @@
 Volpy
 =====
 
-A fast volume rendering implementation for Python. Volpy has support for:
+A slightly fast volume rendering implementation for Python. Volpy has support
+for:
 
   1. Multithreading or multiprocessing at the rendering step
   2. Native implementation of ray casting
