@@ -34,7 +34,7 @@ Examples
     import volpy
     center = np.array([0, 0, 2, 1])
     def sphere(x):
-        norms = np.linalg.norm(x - 1, axis=1)
+        norms = np.linalg.norm(x - center, axis=1)
         return np.where(norms < 1, 1, 0)
-    scene = volpy.Scene(ambient=sphere)
+    scene = volpy.Scene(ambient=sphere, scatter=10)
     image = scene.render((100, 100))
