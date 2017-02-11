@@ -1,9 +1,17 @@
 language: python
 env:
-  - TOX_ENV=py33
+  #- TOX_ENV=py33 # XXX No numpy 1.12.0 support
   - TOX_ENV=py34
+  #- TOX_ENV=py35 # XXX travis-ci does not support
+  #- TOX_ENV=py36 # XXX travis-ci does not support
   - TOX_ENV=flake8
-install:
-  - pip install tox cython
+  - TOX_ENV=benchmark
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y time
+  - pip install tox
+  - pip install Cython --install-option="--no-cython-compile"
+# TODO This would speed up builds a lot if it works
+#  - sudo apt-get install -y cython3
 script:
   - tox -e $TOX_ENV
