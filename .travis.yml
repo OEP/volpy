@@ -5,10 +5,13 @@ env:
   #- TOX_ENV=py35 # XXX travis-ci does not support
   #- TOX_ENV=py36 # XXX travis-ci does not support
   - TOX_ENV=flake8
+  - TOX_ENV=benchmark
 before_install:
-  - pip install tox Cython --install-option="--no-cython-compile"
+  - sudo apt-get -qq update
+  - sudo apt-get install -y time
+  - pip install tox
+  - pip install Cython --install-option="--no-cython-compile"
 # TODO This would speed up builds a lot if it works
-#  - sudo apt-get -qq update
 #  - sudo apt-get install -y cython3
 script:
   - tox -e $TOX_ENV
