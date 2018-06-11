@@ -6,6 +6,28 @@ import math
 import sys
 
 
+RED = (1, 0, 0)
+BLUE = (0, 0, 1)
+
+
+def grid_color(x, transform=None):
+    siny = np.sin(45 * x[:, 1])
+    mask = np.sin(siny + 45 * x[:, 0]) > 0
+    mask = mask.reshape(len(mask), 1)
+    return mask * RED + (1 - mask) * BLUE
+
+
+class Texture(object):
+
+    def __init__(self, color, transform):
+        self.color = color
+        self.transform = transform
+
+    def __call__(self, x):
+        x = self.transform.dot(x.T).T
+        return self.color(x)
+
+
 def main():
     parser = _get_parser()
     args = parser.parse_args()
@@ -28,7 +50,12 @@ def main():
     grid = volpy.Grid(np.ones(args.grid_shape),
                       transform=transform,
                       default=args.default)
-    scene = volpy.Scene(ambient=grid, scatter=args.scatter)
+    element = volpy.Element(grid)
+    if args.color:
+        texture = Texture(grid_color, transform)
+        element.color = texture
+
+    scene = volpy.Scene(ambient=element, scatter=args.scatter)
     image = render(scene, args)
     image.save(args.output)
 
