@@ -3,6 +3,7 @@ import volpy
 from libbenchmark import render, get_parser
 
 import math
+import sys
 
 
 def main():
@@ -10,15 +11,19 @@ def main():
     args = parser.parse_args()
 
     transform = np.eye(4)
-    if args.rotate:
-        args.rotate = np.array(args.rotate) * math.pi / 180
-        transform = volpy.rotatexyz(*args.rotate).dot(transform)
-    if args.scale:
-        transform = volpy.scale(*args.scale).dot(transform)
-    if args.translate:
-        transform = volpy.translate(-args.translate[0],
-                                    -args.translate[1],
-                                    -args.translate[2]).dot(transform)
+    for rst in args.order:
+        if rst not in 'RST':
+            print('Invalid transform type: ' + rst)
+            return 1
+        if rst == 'R' and args.rotate:
+            args.rotate = np.array(args.rotate) * math.pi / 180
+            transform = volpy.rotatexyz(*args.rotate).dot(transform)
+        elif rst == 'S' and args.scale:
+            transform = volpy.scale(*args.scale).dot(transform)
+        elif rst == 'T' and args.translate:
+            transform = volpy.translate(-args.translate[0],
+                                        -args.translate[1],
+                                        -args.translate[2]).dot(transform)
 
     grid = volpy.Grid(np.ones(args.grid_shape),
                       transform=transform,
@@ -40,7 +45,8 @@ def _get_parser():
                         nargs=3)
     parser.add_argument('-R', '--rotate', type=float, nargs=3)
     parser.add_argument('-S', '--scale', type=float, nargs=3)
+    parser.add_argument('-O', '--order', type=str, default='RST')
     return parser
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
