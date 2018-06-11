@@ -153,10 +153,6 @@ class Grid(object):
             A field function. Will be called with the world-space coordinates
             of the grid. The returned values will overwrite the grid values at
             the corresponding indices.
-        field : callable
-            A field function. Will be called with the world-space coordinates
-            of the grid. The returned values will overwrite the grid values at
-            the corresponding indices.
         method : str
             Either 'thread' or 'fork'. Determines the concurrency method used
             for evaluating. With 'thread' multiple threads are launched. With
